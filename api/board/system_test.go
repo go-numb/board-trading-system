@@ -31,17 +31,19 @@ func TestNew(t *testing.T) {
 
 			if ltp <= price {
 				board.Ask.Find(price).Set(&orders.Order{
-					ID:    i,
-					UUID:  fmt.Sprintf("UUID:%d", i),
-					Price: price,
-					Size:  (i + price) * -1,
+					ID:        i,
+					UUID:      fmt.Sprintf("UUID:%d", i),
+					Price:     price,
+					Size:      (i + price) * -1,
+					CreatedAt: time.Now().Add(time.Duration(i) + time.Minute),
 				})
 			} else {
 				board.Bid.Find(price).Set(&orders.Order{
-					ID:    i,
-					UUID:  fmt.Sprintf("UUID:%d", i),
-					Price: price,
-					Size:  i + price,
+					ID:        i,
+					UUID:      fmt.Sprintf("UUID:%d", i),
+					Price:     price,
+					Size:      i + price,
+					CreatedAt: time.Now().Add(time.Duration(i) + time.Minute),
 				})
 			}
 
@@ -64,4 +66,13 @@ func TestNew(t *testing.T) {
 		}
 	}()
 
+	for i := 0; i < max; i++ {
+		isMatch, executions := board.Bid.Find(i).Match(&orders.Order{
+			Size: 100,
+		})
+		if isMatch {
+			fmt.Printf("is match: %+v\n", executions)
+			break
+		}
+	}
 }

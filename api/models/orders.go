@@ -9,3 +9,10 @@ const (
 	OCO
 	IFDOCO
 )
+
+type OrderSide int
+
+const (
+	BUY OrderSide = iota
+	SELL
+)
