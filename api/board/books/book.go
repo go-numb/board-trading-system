@@ -13,23 +13,14 @@ type B struct {
 	Books []*Book
 }
 
-func New(isAsk bool, ltp, length int) *B {
-	books := make([]*Book, length)
-	price := ltp
+func (a B) Len() int { return len(a.Books) }
+func (a B) Swap(i, j int) {
+	a.Books[i], a.Books[j] = a.Books[j], a.Books[i]
+}
+func (a B) Less(i, j int) bool { return a.Books[i].Price < a.Books[j].Price }
 
-	// 増減調整用
-	adjust := 1
-	if !isAsk {
-		adjust = -1
-	}
-
-	for i := 0; i < length; i++ {
-		books[i] = &Book{
-			Price:     price + (i * adjust),
-			Orders:    make([]orders.Order, 0),
-			UpdatedAt: time.Now(),
-		}
-	}
+func New() *B {
+	books := make([]*Book, 0)
 
 	return &B{
 		books,
@@ -43,7 +34,8 @@ func (p *B) Find(price int) *Book {
 		}
 		return p.Books[i]
 	}
-	return nil
+	p.Books = append(p.Books, NewBook(price))
+	return p.Books[len(p.Books)-1]
 }
 
 type Book struct {
@@ -54,10 +46,18 @@ type Book struct {
 	UpdatedAt time.Time
 }
 
+func NewBook(price int) *Book {
+	return &Book{
+		Price:     price,
+		Orders:    make([]orders.Order, 0),
+		UpdatedAt: time.Now(),
+	}
+}
+
 func (p *Book) String() string {
 	p.mux.RLock()
 	defer p.mux.RUnlock()
-	return fmt.Sprintf("%d - %d - %d", p.Price, len(p.Orders), p.Aggregate())
+	return fmt.Sprintf("%d - %d - %d	%s", p.Price, len(p.Orders), p.Aggregate(), p.UpdatedAt.Format("15:04:05"))
 }
 
 func (p *Book) Set(o *orders.Order) {
@@ -82,11 +82,6 @@ func (p *Book) Aggregate() (size int) {
 // - 注文残があれば、引数oを次の価格へ持ち越す
 // - 約定履歴は喰う側である成り方向のSideになる
 func (p *Book) Match(o *orders.Order) (isMatch bool, executions []orders.Order) {
-	start := time.Now()
-	defer func() {
-		end := time.Now()
-		fmt.Println("match exec time: ", end.Sub(start))
-	}()
 	if p == nil {
 		return false, executions
 	}

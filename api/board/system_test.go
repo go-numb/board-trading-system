@@ -6,7 +6,11 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/go-numb/go-bitflyer/v1"
+	"github.com/go-numb/go-bitflyer/v1/jsonrpc"
+
 	"github.com/go-numb/board-trading-system/api/board/books/orders"
+	"github.com/go-numb/board-trading-system/api/models"
 )
 
 func TestNew(t *testing.T) {
@@ -14,8 +18,8 @@ func TestNew(t *testing.T) {
 	r := rand.New(s)
 
 	ltp := 10
-	max := 10
-	board := New(ltp, max)
+	max := 20
+	board := New()
 
 	func() {
 		start := time.Now()
@@ -73,6 +77,94 @@ func TestNew(t *testing.T) {
 		if isMatch {
 			fmt.Printf("is match: %+v\n", executions)
 			break
+		}
+	}
+}
+
+func TestDo(t *testing.T) {
+	board := New()
+
+	ch := make(chan jsonrpc.Response)
+
+	product := "FX_BTC_JPY"
+	channels := []string{
+		"lightning_board_%s",
+		"lightning_executions_%s",
+	}
+	for i := range channels {
+		channels[i] = fmt.Sprintf(channels[i], product)
+	}
+	go jsonrpc.Get(channels, ch)
+
+	ticker := time.NewTicker(time.Second * 3)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			board.String(10)
+			// sort.Sort(board.Ask)
+			// temp := board.Ask.Books[:12]
+			// for i := range temp {
+			// 	fmt.Printf("Ask:	%s\n", temp[len(temp)-1-i].String())
+			// 	if 10 < i {
+			// 		break
+			// 	}
+			// }
+			// fmt.Printf("LTP: %d\n", board.LTP)
+			// sort.Sort(board.Bid)
+			// for i := range board.Bid.Books {
+			// 	fmt.Printf("		%s	:Bid\n", board.Bid.Books[i].String())
+			// 	if 10 < i {
+			// 		break
+			// 	}
+			// }
+
+		case v := <-ch:
+			switch v.Type {
+			case jsonrpc.Board:
+				for i := range v.Orderbook.Asks {
+					board.Ask.Find(int(v.Orderbook.Asks[i].Price)).Set(
+						&orders.Order{
+							Side:      models.SELL,
+							Price:     int(v.Orderbook.Asks[i].Price),
+							Size:      int(v.Orderbook.Asks[i].Size * 100000000000),
+							CreatedAt: time.Now(),
+						},
+					)
+				}
+				for i := range v.Orderbook.Bids {
+					board.Bid.Find(int(v.Orderbook.Bids[i].Price)).Set(
+						&orders.Order{
+							Side:      models.BUY,
+							Price:     int(v.Orderbook.Bids[i].Price),
+							Size:      int(v.Orderbook.Bids[i].Size * 100000000000),
+							CreatedAt: time.Now(),
+						},
+					)
+				}
+				// fmt.Printf("board: %+v\n", v.Orderbook)
+			case jsonrpc.Executions:
+				board.LTP = int(v.Executions[0].Price)
+				for i := range v.Executions {
+					if v.Executions[i].Side == v1.BUY {
+						board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
+							UUID:  v.Executions[i].BuyChildOrderAcceptanceID,
+							Side:  models.ToSide(v.Executions[i].Side),
+							Price: int(v.Executions[i].Price),
+							Size:  int(v.Executions[i].Size * 100000000000),
+						})
+					} else {
+						board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
+							UUID:  v.Executions[i].BuyChildOrderAcceptanceID,
+							Side:  models.ToSide(v.Executions[i].Side),
+							Price: int(v.Executions[i].Price),
+							Size:  int(v.Executions[i].Size * 100000000000),
+						})
+					}
+				}
+				// fmt.Printf("executions: %+v\n", v.Executions)
+			}
 		}
 	}
 }

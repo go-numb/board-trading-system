@@ -6,7 +6,6 @@ This pkg is board trading system.
 ■□□□□□□□□□□ 10%  
 
 ## TODO
-- [ ] Order match & search & delete
 - [ ] to Executions
 - [ ] API (-> set -> match -> executions -> response)
 - [ ] Frontend with Nuxt.js
@@ -16,15 +15,16 @@ This pkg is board trading system.
 - [x] Improve registration speed  
 - [x] Improve reading speed
 - [x] Improve aggregation speed
+- [x] Order match & search & delete
 
-# Usage
+## Usage
 ``` go
 package main
 
 func main() {
-	centerPrice := 10
-	maxLength := 10
-	board := New(ltp, maxLength)
+    centerPrice := 10
+    maxLength := 10
+    board := New(ltp, maxLength)
 
 
     // 注文の登録
