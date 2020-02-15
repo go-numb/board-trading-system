@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -26,12 +27,6 @@ func New() *System {
 }
 
 func (p *System) String(depth int) {
-	start := time.Now()
-	defer func() {
-		end := time.Now()
-		fmt.Println("board print exec time: ", end.Sub(start))
-	}()
-
 	sort.Sort(p.Ask)
 	var str []string
 	count := 0
@@ -50,9 +45,13 @@ func (p *System) String(depth int) {
 		fmt.Printf("%+v\n", str[len(str)-1-i])
 	}
 
-	fmt.Printf("------------	%d\n", p.LTP)
-
 	sort.Sort(p.Bid)
+	var spread int
+	if len(p.Bid.Books) != 0 && len(p.Ask.Books) != 0 {
+		spread = int(math.Max(0, float64(p.Ask.Books[0].Price-p.Bid.Books[len(p.Bid.Books)-1].Price)))
+	}
+	fmt.Printf("------------	%d	%d\n", p.LTP, spread)
+
 	count = 0
 	for i := range p.Bid.Books {
 		l := len(p.Bid.Books) - 1 - i

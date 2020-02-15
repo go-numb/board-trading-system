@@ -13,6 +13,8 @@ import (
 	"github.com/go-numb/board-trading-system/api/models"
 )
 
+const SATOSHI = 100000000000
+
 func TestNew(t *testing.T) {
 	s := rand.NewSource(time.Now().Unix())
 	r := rand.New(s)
@@ -99,26 +101,14 @@ func TestDo(t *testing.T) {
 	ticker := time.NewTicker(time.Second * 3)
 	defer ticker.Stop()
 
+	var buyLength, sellLength int
 	for {
 		select {
 		case <-ticker.C:
 			board.String(10)
-			// sort.Sort(board.Ask)
-			// temp := board.Ask.Books[:12]
-			// for i := range temp {
-			// 	fmt.Printf("Ask:	%s\n", temp[len(temp)-1-i].String())
-			// 	if 10 < i {
-			// 		break
-			// 	}
-			// }
-			// fmt.Printf("LTP: %d\n", board.LTP)
-			// sort.Sort(board.Bid)
-			// for i := range board.Bid.Books {
-			// 	fmt.Printf("		%s	:Bid\n", board.Bid.Books[i].String())
-			// 	if 10 < i {
-			// 		break
-			// 	}
-			// }
+			fmt.Printf("sell %d - %d buy\n", sellLength, buyLength)
+			sellLength = 0
+			buyLength = 0
 
 		case v := <-ch:
 			switch v.Type {
@@ -128,7 +118,7 @@ func TestDo(t *testing.T) {
 						&orders.Order{
 							Side:      models.SELL,
 							Price:     int(v.Orderbook.Asks[i].Price),
-							Size:      int(v.Orderbook.Asks[i].Size * 100000000000),
+							Size:      int(v.Orderbook.Asks[i].Size * SATOSHI),
 							CreatedAt: time.Now(),
 						},
 					)
@@ -138,7 +128,7 @@ func TestDo(t *testing.T) {
 						&orders.Order{
 							Side:      models.BUY,
 							Price:     int(v.Orderbook.Bids[i].Price),
-							Size:      int(v.Orderbook.Bids[i].Size * 100000000000),
+							Size:      int(v.Orderbook.Bids[i].Size * SATOSHI),
 							CreatedAt: time.Now(),
 						},
 					)
@@ -148,19 +138,25 @@ func TestDo(t *testing.T) {
 				board.LTP = int(v.Executions[0].Price)
 				for i := range v.Executions {
 					if v.Executions[i].Side == v1.BUY {
-						board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
+						isMatch, ex := board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
 							UUID:  v.Executions[i].BuyChildOrderAcceptanceID,
 							Side:  models.ToSide(v.Executions[i].Side),
 							Price: int(v.Executions[i].Price),
-							Size:  int(v.Executions[i].Size * 100000000000),
+							Size:  int(v.Executions[i].Size * SATOSHI),
 						})
+						if isMatch {
+							buyLength += len(ex)
+						}
 					} else {
-						board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
+						isMatch, ex := board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
 							UUID:  v.Executions[i].BuyChildOrderAcceptanceID,
 							Side:  models.ToSide(v.Executions[i].Side),
 							Price: int(v.Executions[i].Price),
-							Size:  int(v.Executions[i].Size * 100000000000),
+							Size:  int(v.Executions[i].Size * SATOSHI),
 						})
+						if isMatch {
+							sellLength += len(ex)
+						}
 					}
 				}
 				// fmt.Printf("executions: %+v\n", v.Executions)

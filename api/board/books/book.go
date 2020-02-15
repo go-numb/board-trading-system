@@ -57,7 +57,7 @@ func NewBook(price int) *Book {
 func (p *Book) String() string {
 	p.mux.RLock()
 	defer p.mux.RUnlock()
-	return fmt.Sprintf("%d - %d - %d	%s", p.Price, len(p.Orders), p.Aggregate(), p.UpdatedAt.Format("15:04:05"))
+	return fmt.Sprintf("%d	-	%d	-	%d	%s", p.Price, len(p.Orders), p.Aggregate(), p.UpdatedAt.Format("15:04:05"))
 }
 
 func (p *Book) Set(o *orders.Order) {
