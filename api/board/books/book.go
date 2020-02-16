@@ -10,7 +10,7 @@ import (
 )
 
 type B struct {
-	Books []*Book
+	Books []*Book `json:"books"`
 }
 
 func (a B) Len() int { return len(a.Books) }
@@ -39,11 +39,11 @@ func (p *B) Find(price int) *Book {
 }
 
 type Book struct {
-	mux sync.RWMutex
+	mux sync.RWMutex `json:"mux,omitempty"`
 
-	Price     int
-	Orders    []orders.Order
-	UpdatedAt time.Time
+	Price     int            `json:"price,omitempty"`
+	Orders    []orders.Order `json:"orders,omitempty"`
+	UpdatedAt time.Time      `json:"updated_at,omitempty"`
 }
 
 func NewBook(price int) *Book {

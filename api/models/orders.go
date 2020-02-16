@@ -41,3 +41,7 @@ func ToSide(in interface{}) OrderSide {
 
 	return UNDEFINED
 }
+
+func (side OrderSide) IsAsk() bool {
+	return side == SELL
+}

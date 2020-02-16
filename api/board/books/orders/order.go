@@ -15,20 +15,20 @@ func (a Orders) Swap(i, j int) {
 func (a Orders) Less(i, j int) bool { return a[i].CreatedAt.UnixNano() < a[j].CreatedAt.UnixNano() }
 
 type Order struct {
-	ID      int
-	UUID    string
-	Product string
+	ID      int    `json:"id"`
+	UUID    string `json:"uuid"`
+	Product string `json:"product"`
 
-	AcceptanceID string
+	AcceptanceID string `json:"acceptance_id,omitempty"`
 
-	Side  models.OrderSide
-	Price int
+	Side  models.OrderSide `json:"side,omitempty"`
+	Price int              `json:"price,omitempty"`
 	// Size use buy+/sell-
-	Size           int
-	MinuteToExpire int
+	Size           int `json:"size,omitempty"`
+	MinuteToExpire int `json:"minute_to_expire,omitempty"`
 
-	Type      models.OrderType
-	CreatedAt time.Time
+	Type      models.OrderType `json:"type,omitempty"`
+	CreatedAt time.Time        `json:"created_at,omitempty"`
 }
 
 func New() *Order {

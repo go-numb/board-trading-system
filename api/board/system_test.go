@@ -98,15 +98,22 @@ func TestDo(t *testing.T) {
 	}
 	go jsonrpc.Get(channels, ch)
 
-	ticker := time.NewTicker(time.Second * 3)
+	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
 
 	var buyLength, sellLength int
 	for {
 		select {
 		case <-ticker.C:
-			board.String(10)
-			fmt.Printf("sell %d - %d buy\n", sellLength, buyLength)
+			func() {
+				start := time.Now()
+				defer func() {
+					end := time.Now()
+					fmt.Println("print exec time: ", end.Sub(start))
+				}()
+				board.String(10)
+				fmt.Printf("sell %d - %d buy\n", sellLength, buyLength)
+			}()
 			sellLength = 0
 			buyLength = 0
 
@@ -146,6 +153,9 @@ func TestDo(t *testing.T) {
 						})
 						if isMatch {
 							buyLength += len(ex)
+							for i := range ex {
+								fmt.Printf("buy	%d\n", ex[i].Size)
+							}
 						}
 					} else {
 						isMatch, ex := board.Ask.Find(int(v.Executions[i].Price)).Match(&orders.Order{
@@ -156,6 +166,9 @@ func TestDo(t *testing.T) {
 						})
 						if isMatch {
 							sellLength += len(ex)
+							for i := range ex {
+								fmt.Printf("sell	%d\n", ex[i].Size)
+							}
 						}
 					}
 				}
