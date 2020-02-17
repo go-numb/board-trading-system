@@ -1,13 +1,18 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-numb/board-trading-system/api/board"
 	"github.com/go-numb/board-trading-system/api/board/books/orders"
+	"github.com/go-numb/board-trading-system/api/models"
 
 	"github.com/labstack/echo"
+)
+
+const (
+	PREFIX = "REC"
+	SUFFIX = "F"
 )
 
 type Client struct {
@@ -42,18 +47,16 @@ func (p *Client) Order(c echo.Context) error {
 		return err
 	}
 
-	if o.Side.IsAsk() {
-		p.Board.Ask.Find(o.Price).Set(o)
-		isMatch, executions := p.Board.Bid.Find(o.Price).Match(o)
-		if isMatch {
-			fmt.Printf("sell executions: %+v\n", executions)
-		}
-	} else {
-		p.Board.Bid.Find(o.Price).Set(o)
-		isMatch, executions := p.Board.Ask.Find(o.Price).Match(o)
-		if isMatch {
-			fmt.Printf("buy executions: %+v\n", executions)
-		}
+	// 要検討: UUIDとは異なるが親しい文字列になりそう
+	o.AcceptanceID = models.CreateID(PREFIX, SUFFIX)
+
+	isMatch, executions := p.Board.Set(o)
+	if isMatch {
+		// TODO:
+		// 1. executionsを各発注者へ通知
+		// 2. executionsをpublicに配信
+		_ = executions
+
 	}
 
 	return c.JSON(http.StatusOK, &Response{

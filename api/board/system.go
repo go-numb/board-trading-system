@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-numb/board-trading-system/api/board/books"
+	"github.com/go-numb/board-trading-system/api/board/books/orders"
 )
 
 type System struct {
@@ -64,6 +65,18 @@ func (p *System) String(depth int) {
 			break
 		}
 	}
+}
+
+func (p *System) Set(o *orders.Order) (isMatch bool, executions []orders.Order) {
+	if o.Side.IsAsk() {
+		p.Ask.Find(o.Price).Set(o)
+		isMatch, executions = p.Bid.Find(o.Price).Match(o)
+	} else {
+		p.Bid.Find(o.Price).Set(o)
+		isMatch, executions = p.Ask.Find(o.Price).Match(o)
+	}
+
+	return isMatch, executions
 }
 
 type Response struct {

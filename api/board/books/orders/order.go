@@ -6,6 +6,8 @@ import (
 	"github.com/go-numb/board-trading-system/api/models"
 )
 
+const PREFIX = "BOS-"
+
 type Orders []Order
 
 func (a Orders) Len() int { return len(a) }
@@ -35,7 +37,7 @@ func New() *Order {
 	now := time.Now()
 	return &Order{
 		ID:        now.UnixNano() / 1000,
-		UUID:      models.CreateID(),
+		UUID:      models.CreateID(PREFIX, ""),
 		CreatedAt: now,
 	}
 }

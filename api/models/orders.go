@@ -6,8 +6,6 @@ import (
 	"github.com/rs/xid"
 )
 
-const PREFIX = "BOS-"
-
 type OrderType int
 
 const (
@@ -52,6 +50,6 @@ func (side OrderSide) IsAsk() bool {
 	return side == SELL
 }
 
-func CreateID() string {
-	return PREFIX + xid.New().String()
+func CreateID(prefix, suffix string) string {
+	return prefix + xid.New().String() + suffix
 }
