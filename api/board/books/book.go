@@ -137,8 +137,6 @@ func (p *Book) Aggregate() (size int) {
 // - 約定履歴は喰う側である成り方向のSideになる
 func (p *Book) Match(o *orders.Order) (isMatch bool, executions []orders.Order) {
 	if len(p.Orders) <= 0 {
-		// 喰うことができる板がないため、oderは板置き完了とする
-		o.Size = 0
 		return false, executions
 	}
 

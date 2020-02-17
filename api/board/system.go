@@ -77,18 +77,31 @@ func (p *System) Set(o *orders.Order) (executions []orders.Order) {
 	var i int
 	for o.Next() {
 		if o.Side.IsAsk() {
-			isMatch, ex := p.Bid.Find(o.Price - i).Match(o)
+			target := p.LTP - i
+			if target < o.Price {
+				break
+			}
+			isMatch, ex := p.Bid.Find(target).Match(o)
 			if isMatch {
 				executions = append(executions, ex...)
 			}
 		} else {
-			isMatch, ex := p.Ask.Find(o.Price + i).Match(o)
+			target := p.LTP + i
+			if o.Price < target {
+				break
+			}
+			isMatch, ex := p.Ask.Find(target).Match(o)
 			if isMatch {
 				executions = append(executions, ex...)
 			}
 		}
 		// 買い上がり・売りさがり用
 		i++
+	}
+
+	if 0 < len(executions) {
+		// 約定している場合は最終約定のPriceでBoard.LTPを更新
+		p.LTP = executions[len(executions)-1].Price
 	}
 
 	return executions
