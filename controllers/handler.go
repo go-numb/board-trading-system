@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-numb/board-trading-system/api/board"
@@ -36,15 +37,23 @@ func (p *Client) Orderboard(c echo.Context) error {
 }
 
 func (p *Client) Order(c echo.Context) error {
-	o := new(orders.Order)
+	o := orders.New()
 	if err := c.Bind(o); err != nil {
 		return err
 	}
 
 	if o.Side.IsAsk() {
 		p.Board.Ask.Find(o.Price).Set(o)
+		isMatch, executions := p.Board.Bid.Find(o.Price).Match(o)
+		if isMatch {
+			fmt.Printf("sell executions: %+v\n", executions)
+		}
 	} else {
 		p.Board.Bid.Find(o.Price).Set(o)
+		isMatch, executions := p.Board.Ask.Find(o.Price).Match(o)
+		if isMatch {
+			fmt.Printf("buy executions: %+v\n", executions)
+		}
 	}
 
 	return c.JSON(http.StatusOK, &Response{

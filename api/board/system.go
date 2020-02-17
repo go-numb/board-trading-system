@@ -67,11 +67,11 @@ func (p *System) String(depth int) {
 }
 
 type Response struct {
-	LTP       int       `json:"ltp,omitempty"`
-	Spread    int       `json:"spread,omitempty"`
-	Asks      []Inner   `json:"asks,omitempty"`
-	Bids      []Inner   `json:"bids,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	LTP       int     `json:"ltp,omitempty"`
+	Spread    int     `json:"spread,omitempty"`
+	Asks      []Inner `json:"asks,omitempty"`
+	Bids      []Inner `json:"bids,omitempty"`
+	UpdatedAt string  `json:"updated_at,omitempty"`
 }
 
 type Inner struct {
@@ -118,7 +118,7 @@ func (p *System) Snap(depth int) *Response {
 		res.Spread = int(math.Max(0, float64(p.Ask.Books[0].Price-p.Bid.Books[len(p.Bid.Books)-1].Price)))
 	}
 	res.LTP = p.LTP
-	res.UpdatedAt = p.UpdatedAt
+	res.UpdatedAt = p.UpdatedAt.Format("15:04:05")
 
 	count = 0
 	for i := range p.Bid.Books {

@@ -4,40 +4,49 @@
       <div class="columns">
         <div class="column">
           <p>
-            <b-button type="is-success" @click="get" outlined>Get board</b-button>
+            <b-button type="is-success" @click="get" outlined>reload</b-button>
           </p>
           <p v-if="res">{{res}}</p>
           <p v-if="errors">{{errors}}</p>
+          <p v-if="board.updated_at != ''" class="has-text-right">Updated: {{board.updated_at}}</p>
           <table class="table is-fullwidth is-hoverable">
             <tbody>
-              <tr v-for="(v,i) in asks" :key="'ask:'+i">
-                <td>{{v.size}}</td>
-                <th>{{v.price}}</th>
-                <td></td>
-                <th></th>
-                <td></td>
+              <tr v-for="(v,i) in board.asks" :key="'ask:'+i">
+                <td class="has-text-centered" width="20%">{{v.size}}</td>
+                <th class="has-text-centered" width="20%">{{v.price}}</th>
+                <td class="has-text-centered" width="20%"></td>
+                <th class="has-text-centered" width="20%"></th>
+                <td class="has-text-centered" width="20%"></td>
               </tr>
               <tr>
-                <td></td>
-                <th></th>
-                <td>{{ltp + '-' + spread}}</td>
-                <th></th>
-                <td></td>
+                <td class="has-text-centered"></td>
+                <th class="has-text-centered"></th>
+                <td class="has-text-centered">{{board.ltp + '-' + board.spread}}</td>
+                <th class="has-text-centered"></th>
+                <td class="has-text-centered"></td>
               </tr>
-              <tr v-for="(v,i) in bids" :key="'bid:'+i">
-                <td></td>
-                <th></th>
-                <td></td>
-                <th>{{v.price}}</th>
-                <td>{{v.size}}</td>
+              <tr v-for="(v,i) in board.bids" :key="'bid:'+i">
+                <td class="has-text-centered"></td>
+                <th class="has-text-centered"></th>
+                <td class="has-text-centered"></td>
+                <th class="has-text-centered">{{v.price}}</th>
+                <td class="has-text-centered">{{v.size}}</td>
               </tr>
             </tbody>
           </table>
         </div>
         <div class="column">
-          <div class="block">
-            <b-radio v-model.number="order.type" native-value="0">成行</b-radio>
-            <b-radio v-model.number="order.type" native-value="1">指値</b-radio>
+          <div class="columns">
+            <div class="column field">
+              <div class="control has-text-left">
+                <b-radio v-model.number="order.type" native-value="0">成行</b-radio>
+              </div>
+            </div>
+            <div class="column field">
+              <div class="control has-text-right">
+                <b-radio v-model.number="order.type" native-value="1">指値</b-radio>
+              </div>
+            </div>
           </div>
           <b-field label="Price">
             <b-input v-model.number="order.price"></b-input>
@@ -45,9 +54,17 @@
           <b-field label="Size">
             <b-input v-model.number="order.size"></b-input>
           </b-field>
-          <div class="block">
-            <b-button class="is-danger" @click="sendorder(1)">BUY</b-button>
-            <b-button class="is-info" @click="sendorder(2)">SELL</b-button>
+          <div class="columns">
+            <div class="column field">
+              <div class="control has-text-left">
+                <b-button class="is-danger" @click="sendorder(1)">BUY</b-button>
+              </div>
+            </div>
+            <div class="column field">
+              <div class="control has-text-right">
+                <b-button class="is-info" @click="sendorder(2)">SELL</b-button>
+              </div>
+            </div>
           </div>
           <p v-if="oResponse">{{oResponse}}</p>
         </div>
@@ -63,9 +80,11 @@ export default {
   data() {
     return {
       errors: "",
-      ltp: 0,
-      asks: [],
-      bids: [],
+      // ltp: 0,
+      // asks: [],
+      // bids: [],
+      // updated: "",
+      board: [],
 
       order: {
         type: 0,
@@ -77,6 +96,10 @@ export default {
     };
   },
 
+  mounted: function () {
+    this.get()
+  },
+
   methods: {
     get: function() {
       this.$axios
@@ -84,10 +107,12 @@ export default {
         .then(res => {
           console.log(res);
           this.res = res;
-          this.ltp = res.data.ltp;
-          this.spread = res.data.spread;
-          this.asks = res.data.asks;
-          this.bids = res.data.bids;
+          this.board = res.data;
+          // this.ltp = res.data.ltp;
+          // this.spread = res.data.spread;
+          // this.asks = res.data.asks;
+          // this.bids = res.data.bids;
+          // this.updated = res.data.updated_at;
         })
         .catch(err => {
           console.error(err);

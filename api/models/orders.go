@@ -1,6 +1,12 @@
 package models
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/rs/xid"
+)
+
+const PREFIX = "BOS-"
 
 type OrderType int
 
@@ -44,4 +50,8 @@ func ToSide(in interface{}) OrderSide {
 
 func (side OrderSide) IsAsk() bool {
 	return side == SELL
+}
+
+func CreateID() string {
+	return PREFIX + xid.New().String()
 }

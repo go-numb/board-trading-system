@@ -15,7 +15,7 @@ func (a Orders) Swap(i, j int) {
 func (a Orders) Less(i, j int) bool { return a[i].CreatedAt.UnixNano() < a[j].CreatedAt.UnixNano() }
 
 type Order struct {
-	ID      int    `json:"id"`
+	ID      int64  `json:"id"`
 	UUID    string `json:"uuid"`
 	Product string `json:"product"`
 
@@ -32,7 +32,10 @@ type Order struct {
 }
 
 func New() *Order {
+	now := time.Now()
 	return &Order{
-		CreatedAt: time.Now(),
+		ID:        now.UnixNano() / 1000,
+		UUID:      models.CreateID(),
+		CreatedAt: now,
 	}
 }
