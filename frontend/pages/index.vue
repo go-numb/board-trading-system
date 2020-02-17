@@ -35,7 +35,7 @@
             </tbody>
           </table>
 
-          <table class="table is-fullwidth is-hoverable" v-if="executions.length !== 0">
+          <table class="table is-fullwidth is-hoverable" v-if="executions">
             <thead>
               <tr>
                 <th class="has-text-centered">eid</th>
@@ -113,7 +113,7 @@ export default {
         price: 0,
         size: 0
       },
-      executions: [],
+
       oResponse: ""
     };
   },

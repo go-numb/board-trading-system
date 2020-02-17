@@ -58,7 +58,6 @@ func (p *Client) Order(c echo.Context) error {
 
 		// TODO:
 		// 1. executionsを各発注者へ通知
-		_ = executions
 
 	}
 

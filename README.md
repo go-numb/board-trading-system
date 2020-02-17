@@ -54,5 +54,8 @@ func main() {
 
 ```
 
+## Frontend like a testnet
+![frontend](https://github.com/go-numb/board-trading-system/tree/master/frontend/static)
+
 ## Auther
 [@_numbP](https://twitter.com/_numbP)
