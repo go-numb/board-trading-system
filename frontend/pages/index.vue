@@ -8,7 +8,7 @@
           </p>
           <p v-if="res">{{res}}</p>
           <p v-if="errors">{{errors}}</p>
-          <table>
+          <table class="table is-fullwidth is-hoverable">
             <tbody>
               <tr v-for="(v,i) in asks" :key="'ask:'+i">
                 <td>{{v.size}}</td>
@@ -20,7 +20,7 @@
               <tr>
                 <td></td>
                 <th></th>
-                <td>{{ltp}}</td>
+                <td>{{ltp + '-' + spread}}</td>
                 <th></th>
                 <td></td>
               </tr>
