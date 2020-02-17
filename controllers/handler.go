@@ -53,9 +53,11 @@ func (p *Client) Order(c echo.Context) error {
 
 	executions := p.Board.Set(o)
 	if 0 < len(executions) {
+		// 約定している場合は最終約定のPriceでBoard.LTPを更新
+		p.Board.LTP = executions[len(executions)-1].Price
+
 		// TODO:
 		// 1. executionsを各発注者へ通知
-		// 2. executionsをpublicに配信
 		_ = executions
 
 	}
@@ -63,6 +65,9 @@ func (p *Client) Order(c echo.Context) error {
 	return c.JSON(http.StatusOK, &Response{
 		Code:   200,
 		Status: "success",
-		Data:   o,
+		Data: map[string]interface{}{
+			"order":      o,
+			"executions": executions,
+		},
 	})
 }

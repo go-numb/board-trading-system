@@ -34,6 +34,27 @@
               </tr>
             </tbody>
           </table>
+
+          <table class="table is-fullwidth is-hoverable" v-if="executions.length !== 0">
+            <thead>
+              <tr>
+                <th class="has-text-centered">eid</th>
+                <th class="has-text-centered">product code</th>
+                <th class="has-text-centered">price</th>
+                <th class="has-text-centered">size</th>
+                <th class="has-text-centered">executed at</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(v,i) in executions" :key="'eid:'+i">
+                <td class="has-text-centered">{{v.uuid}}</td>
+                <td class="has-text-centered">{{v.product}}</td>
+                <td class="has-text-centered">{{v.price}}</td>
+                <td class="has-text-centered">{{v.size}}</td>
+                <td class="has-text-centered">{{v.created_at}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="column">
           <div class="columns">
@@ -92,12 +113,13 @@ export default {
         price: 0,
         size: 0
       },
+      executions: [],
       oResponse: ""
     };
   },
 
-  mounted: function () {
-    this.get()
+  mounted: function() {
+    this.get();
   },
 
   methods: {
@@ -124,9 +146,10 @@ export default {
         .then(res => {
           console.log(res);
           this.oResponse = res.status;
+          this.executions = res.data.executions;
           if (res.code == 200) {
             // update board
-            this.get()
+            this.get();
           }
         })
         .catch(err => {
