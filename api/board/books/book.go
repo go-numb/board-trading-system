@@ -77,12 +77,68 @@ func (p *Book) Aggregate() (size int) {
 	return size
 }
 
+// // Match is order matcher
+// // - 注文が合致すれば注文分板を削除し、Executions化
+// // - 注文残があれば、引数oを次の価格へ持ち越す
+// // - 約定履歴は喰う側である成り方向のSideになる
+// func (p *Book) Match(o *orders.Order) (isMatch bool, executions []orders.Order) {
+// 	if p == nil {
+// 		return false, executions
+// 	}
+
+// 	p.mux.Lock()
+// 	defer p.mux.Unlock()
+
+// 	orderArray := orders.Orders(p.Orders)
+// 	sort.Reverse(orderArray)
+
+// 	// 古いものが先頭にあるため、新規注文分を削除していく
+// 	remain := o.Size
+// 	for i := range orderArray {
+// 		diff := orderArray[i].Size - remain
+// 		if diff <= 0 { // 待機注文完全約定 & 新規注文残
+// 			executions = append(executions, orderArray[i])
+// 			if diff == 0 { // 待機注文と新規注文が合致
+// 				break
+// 			}
+// 			// 約定した分、注文枚数を減らし、次へ
+// 			remain -= orderArray[i].Size
+// 			continue
+// 		}
+
+// 		// 部分約定
+// 		// 待機注文一部約定 & 新規完全約定
+// 		ord := orderArray[i]
+// 		ord.Size = remain
+// 		executions = append(executions, ord)
+// 		// 約定残はorderArray[i]に戻す
+// 		orderArray[i].Size -= remain
+// 		// 新規注文がなくなった
+// 		break
+// 	}
+
+// 	// 待機注文を満たしたものを削除する
+// 	for i := range executions {
+// 		for j := range orderArray {
+// 			if orderArray[j].UUID != executions[i].UUID {
+// 				continue
+// 			}
+// 			orderArray = append(orderArray[:j], orderArray[j+1:]...)
+// 			break
+// 		}
+// 	}
+
+// 	return true, executions
+// }
+
 // Match is order matcher
 // - 注文が合致すれば注文分板を削除し、Executions化
 // - 注文残があれば、引数oを次の価格へ持ち越す
 // - 約定履歴は喰う側である成り方向のSideになる
 func (p *Book) Match(o *orders.Order) (isMatch bool, executions []orders.Order) {
-	if p == nil {
+	if len(p.Orders) <= 0 {
+		// 喰うことができる板がないため、oderは板置き完了とする
+		o.Size = 0
 		return false, executions
 	}
 
@@ -123,10 +179,17 @@ func (p *Book) Match(o *orders.Order) (isMatch bool, executions []orders.Order) 
 			if orderArray[j].UUID != executions[i].UUID {
 				continue
 			}
-			orderArray = append(orderArray[:j], orderArray[j+1:]...)
+			if orderArray[j].Size == executions[i].Size {
+				orderArray = append(orderArray[:j], orderArray[j+1:]...)
+			}
 			break
 		}
 	}
 
+	p.Orders = orderArray
+	// 喰った枚数分、新規注文の枚数を減らし
+	// 次の価格へ
+	// TODO: 喰える板がなくなった場合の対応
+	o.Size = remain
 	return true, executions
 }

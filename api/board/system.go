@@ -67,16 +67,31 @@ func (p *System) String(depth int) {
 	}
 }
 
-func (p *System) Set(o *orders.Order) (isMatch bool, executions []orders.Order) {
+func (p *System) Set(o *orders.Order) (executions []orders.Order) {
 	if o.Side.IsAsk() {
 		p.Ask.Find(o.Price).Set(o)
-		isMatch, executions = p.Bid.Find(o.Price).Match(o)
 	} else {
 		p.Bid.Find(o.Price).Set(o)
-		isMatch, executions = p.Ask.Find(o.Price).Match(o)
 	}
 
-	return isMatch, executions
+	var i int
+	for o.Next() {
+		if o.Side.IsAsk() {
+			isMatch, ex := p.Bid.Find(o.Price - i).Match(o)
+			if isMatch {
+				executions = append(executions, ex...)
+			}
+		} else {
+			isMatch, ex := p.Ask.Find(o.Price + i).Match(o)
+			if isMatch {
+				executions = append(executions, ex...)
+			}
+		}
+		// 買い上がり・売りさがり用
+		i++
+	}
+
+	return executions
 }
 
 type Response struct {
@@ -131,7 +146,7 @@ func (p *System) Snap(depth int) *Response {
 		res.Spread = int(math.Max(0, float64(p.Ask.Books[0].Price-p.Bid.Books[len(p.Bid.Books)-1].Price)))
 	}
 	res.LTP = p.LTP
-	res.UpdatedAt = p.UpdatedAt.Format("15:04:05")
+	res.UpdatedAt = p.UpdatedAt.Format("15:04:05.000")
 
 	count = 0
 	for i := range p.Bid.Books {

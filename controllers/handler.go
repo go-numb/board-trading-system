@@ -51,8 +51,8 @@ func (p *Client) Order(c echo.Context) error {
 	// 要検討: UUIDとは異なるが親しい文字列になりそう
 	o.AcceptanceID = models.CreateID(PREFIX, SUFFIX)
 
-	isMatch, executions := p.Board.Set(o)
-	if isMatch {
+	executions := p.Board.Set(o)
+	if 0 < len(executions) {
 		// TODO:
 		// 1. executionsを各発注者へ通知
 		// 2. executionsをpublicに配信

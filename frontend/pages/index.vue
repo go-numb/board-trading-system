@@ -108,11 +108,6 @@ export default {
           console.log(res);
           this.res = res;
           this.board = res.data;
-          // this.ltp = res.data.ltp;
-          // this.spread = res.data.spread;
-          // this.asks = res.data.asks;
-          // this.bids = res.data.bids;
-          // this.updated = res.data.updated_at;
         })
         .catch(err => {
           console.error(err);
@@ -129,6 +124,10 @@ export default {
         .then(res => {
           console.log(res);
           this.oResponse = res.status;
+          if (res.code == 200) {
+            // update board
+            this.get()
+          }
         })
         .catch(err => {
           console.error(err);

@@ -41,3 +41,11 @@ func New() *Order {
 		CreatedAt: now,
 	}
 }
+
+// Next is remain size, go to next price
+func (p *Order) Next() bool {
+	if 0 < p.Size {
+		return true
+	}
+	return false
+}
