@@ -41,6 +41,7 @@ func (p *Client) Orderboard(c echo.Context) error {
 	})
 }
 
+// Order set & match in board
 func (p *Client) Order(c echo.Context) error {
 	o := orders.New()
 	if err := c.Bind(o); err != nil {

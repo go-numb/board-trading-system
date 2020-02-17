@@ -3,12 +3,13 @@ This pkg is board trading system.
 ※ Price is integer.
 
 ## Progress
-■□□□□□□□□□□ 10%  
+■■□□□□□□□□□ 20%  
 
 ## TODO
+- [ ] Database in program
 - [ ] to Executions
 - [ ] API (-> set -> match -> executions -> response)
-- [ ] Frontend with Nuxt.js
+- [ ] each Websocket channels
 - [ ] all kinds...
 
 
@@ -16,34 +17,39 @@ This pkg is board trading system.
 - [x] Improve reading speed
 - [x] Improve aggregation speed
 - [x] Order match & search & delete
+- [x] UUID with xid
+- [x] Frontend with Nuxt.js
 
 ## Usage
 ``` go
 package main
 
 func main() {
-    centerPrice := 10
-    maxLength := 10
-    board := New(ltp, maxLength)
+    board := New()
 
 
     // 注文の登録
     setPrice = 10
-    board.Ask.Find(setPrice).Set(&orders.Order{
-        ID:    i,
-        UUID:  fmt.Sprintf("UUID:%d", i),
-        Price: setPrice,
-        Size:  <size>,
-    })
+    o := orders.New()
+    o.Price = <price>
+    o.Size = <size>
+    isMatch,executions := board.Set(o)
+    if isMatch {
+        // TODO:
+        // 注文主へPrivate配信
+        // Publicへ配信
+        _ = executions
+    }
 
 
     // セットした注文の集計と表示
-    for i := range board.Ask.Books {
-        fmt.Printf("Ask:	%s\n", board.Ask.Books[len(board.Ask.Books)-i-1].String())
-    }
-    for i := range board.Bid.Books {
-        fmt.Printf("		%s	:Bid\n", board.Bid.Books[i].String())
-    }
+    board.String()
+
+    // to JSON
+    depth = 10
+    res := board.Snap(depth)
+    JSON(http.StatusOK, res)
+    // -> { "code": 200, "status": "success", "data": { "ltp": 150, "asks": [ { "price": 201, "size": 20 }, { "price": 150, "size": 20 } ], "bids": [ { "price": 150, "size": 20 }, { "price": 100, "size": 20 } ], "updated_at": "14:52:58" } }
 }
 
 ```
